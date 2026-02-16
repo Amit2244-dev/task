@@ -1,0 +1,190 @@
+<div class="dashboard-container">
+    <!-- Header / Navbar -->
+    <header class="navbar">
+        <div class="navbar-brand">
+            <div class="logo-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
+                </svg>
+            </div>
+            <span class="brand-name">MultiLevel App</span>
+        </div>
+
+        <div class="navbar-user">
+            <div class="user-info">
+                <span class="username">{{ currentUser?.username }}</span>
+                <span class="user-role badge" [ngClass]="currentUser?.role">{{ currentUser?.role }}</span>
+            </div>
+            <div class="avatar-circle">
+                {{ currentUser?.username?.charAt(0)?.toUpperCase() }}
+            </div>
+            <button class="logout-btn" (click)="logout()" title="Logout">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                    <polyline points="16 17 21 12 16 7" />
+                    <line x1="21" y1="12" x2="9" y2="12" />
+                </svg>
+            </button>
+        </div>
+    </header>
+
+    <main class="main-content">
+
+        <!-- Tab Navigation -->
+        <div class="tabs-container">
+            <button class="tab-item" [class.active]="activeTab === 'transactions'"
+                (click)="setActiveTab('transactions')">
+                Transactions
+            </button>
+            <button class="tab-item" [class.active]="activeTab === 'users'" (click)="setActiveTab('users')">
+                User Management
+            </button>
+            <button class="tab-item" [class.active]="activeTab === 'profile'" (click)="setActiveTab('profile')">
+                Profile
+            </button>
+        </div>
+
+        <div class="tab-content">
+
+            <!-- Transactions Tab -->
+            <div *ngIf="activeTab === 'transactions'" class="fade-in">
+                <!-- Balance Card -->
+                <div class="card balance-card full-width">
+                    <div class="card-header-transparent">
+                        <h3>Current Balance</h3>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="1" y="4" width="22" height="16" rx="2" ry="2" />
+                            <line x1="1" y1="10" x2="23" y2="10" />
+                        </svg>
+                    </div>
+                    <div class="balance-value">
+                        ${{ balance | number:'1.2-2' }}
+                    </div>
+                    <div class="balance-footer">
+                        <p class="balance-subtitle">Available Credit</p>
+                        <!-- Admin Self-Recharge -->
+                        <div *ngIf="currentUser?.role === 'admin'" class="recharge-section">
+                            <div class="recharge-input-group">
+                                <span class="currency-sym">$</span>
+                                <input type="number" [(ngModel)]="rechargeAmount" placeholder="Amount" min="1"
+                                    class="recharge-input" />
+                                <button class="recharge-btn" (click)="selfRecharge()">+ Recharge</button>
+                            </div>
+                            <p *ngIf="rechargeMessage" class="recharge-msg">{{ rechargeMessage }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card transactions-card full-width">
+                    <div class="card-header">
+                        <h3>Recent Transactions</h3>
+                        <button class="icon-btn" (click)="loadTransactions()" title="Refresh">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <polyline points="23 4 23 10 17 10" />
+                                <polyline points="1 20 1 14 7 14" />
+                                <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Type</th>
+                                    <th>Amount</th>
+                                    <th>Details</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr *ngFor="let tx of transactions">
+                                    <td>{{ tx.createdAt | date:'MMM d, y, h:mm a' }}</td>
+                                    <td>
+                                        <span class="status-badge" [ngClass]="tx.type">{{ tx.type }}</span>
+                                    </td>
+                                    <td
+                                        [ngClass]="{'text-negative': tx.type === 'debit', 'text-positive': tx.type === 'credit'}">
+                                        {{ tx.type === 'debit' ? '-' : '+' }}{{ tx.amount | currency }}
+                                    </td>
+                                    <td class="text-muted">
+                                        {{ tx.fromUser?.username }} <span class="arrow">→</span> {{ tx.toUser?.username
+                                        }}
+                                    </td>
+                                </tr>
+                                <tr *ngIf="transactions.length === 0">
+                                    <td colspan="4" class="empty-state">
+                                        <div class="empty-icon">💸</div>
+                                        <p>No transactions yet</p>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- User Management Tab -->
+            <div *ngIf="activeTab === 'users'" class="fade-in">
+                <div class="card hierarchy-card full-width">
+                    <div class="card-header">
+                        <h3>Network Hierarchy</h3>
+                    </div>
+                    <div class="card-body">
+                        <app-user-management (transferClick)="openTransferModal($event)"></app-user-management>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Profile Tab -->
+            <div *ngIf="activeTab === 'profile'" class="fade-in">
+                <div class="card profile-card full-width">
+                    <div class="card-header">
+                        <h3>My Profile</h3>
+                    </div>
+                    <div class="profile-body-expanded">
+                        <div class="profile-header-section">
+                            <div class="profile-avatar-xl">
+                                {{ currentUser?.username?.charAt(0)?.toUpperCase() }}
+                            </div>
+                            <div class="profile-main-info">
+                                <h2>{{ currentUser?.username }}</h2>
+                                <span class="user-role badge" [ngClass]="currentUser?.role">{{ currentUser?.role }}</span>
+                                <span class="level-badge">Level {{ currentUser?.level }}</span>
+                            </div>
+                        </div>
+
+                        <div class="profile-details-grid">
+                            <div class="detail-box">
+                                <span class="label">User ID</span>
+                                <span class="value doc-id">{{ currentUser?._id }}</span>
+                            </div>
+                            <div class="detail-box">
+                                <span class="label">Hierarchy Level</span>
+                                <span class="value">Level {{ currentUser?.level }}</span>
+                            </div>
+                            <div class="detail-box">
+                                <span class="label">Account Status</span>
+                                <span class="value status-active">Active</span>
+                            </div>
+                            <div class="detail-box">
+                                <span class="label">Current Balance</span>
+                                <span class="value">{{ balance | currency }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+</div>
+
+<!-- Modal -->
+<app-transfer-modal *ngIf="showTransferModal" [toUser]="selectedChildUser" (close)="closeTransferModal()"
+    (transferComplete)="onTransferSuccess()">
+</app-transfer-modal>

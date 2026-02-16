@@ -1,0 +1,57 @@
+<div class="login-wrapper">
+    <div class="login-card">
+        <div class="icon-container">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" />
+                <polyline points="10 17 15 12 10 7" />
+                <line x1="15" y1="12" x2="3" y2="12" />
+            </svg>
+        </div>
+        <h2 class="title">Sign in</h2>
+        <p class="subtitle">Welcome back to the Multi-Level System</p>
+
+        <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+            <div class="input-group">
+                <span class="input-icon">👤</span>
+                <input type="text" formControlName="username" placeholder="Username" />
+            </div>
+
+            <div class="input-group">
+                <span class="input-icon">🔒</span>
+                <input type="password" formControlName="password" placeholder="Password" />
+            </div>
+
+            <div class="captcha-section">
+                <div class="captcha-img" title="Security Code">
+                    <div *ngIf="captchaLoading">Loading...</div>
+                    <div *ngIf="captchaLoaded" [innerHTML]="captchaSvg"></div>
+                    <div *ngIf="!captchaLoaded && !captchaLoading" class="captcha-placeholder">No CAPTCHA</div>
+                </div>
+                <button type="button" class="refresh-btn" (click)="loadCaptcha()" title="Refresh">↻</button>
+            </div>
+
+            <div class="input-group">
+                <input type="text" formControlName="captcha" placeholder="Enter Security Code" />
+            </div>
+
+            <div *ngIf="errorMessage" class="error-message">
+                {{ errorMessage }}
+            </div>
+
+            <button type="submit" [disabled]="loginForm.invalid" class="submit-btn">
+                Get Started
+            </button>
+
+            <div class="divider">
+                <span>Or sign in with</span>
+            </div>
+
+            <div class="social-login">
+                <button type="button" class="social-btn google"><span class="icon">G</span></button>
+                <button type="button" class="social-btn facebook"><span class="icon">f</span></button>
+                <button type="button" class="social-btn apple"><span class="icon"></span></button>
+            </div>
+        </form>
+    </div>
+</div>

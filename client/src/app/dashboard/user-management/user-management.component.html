@@ -1,0 +1,85 @@
+<div class="user-mgmt-container">
+    <div class="action-header">
+        <button class="btn-primary" (click)="toggleCreateForm()" *ngIf="!showCreateForm">
+            <span class="icon">+</span> Create New User
+        </button>
+    </div>
+
+    <!-- Create Form -->
+    <div *ngIf="showCreateForm" class="create-form-card">
+        <h4>Create Next-Level User</h4>
+        <form [formGroup]="createUserForm" (ngSubmit)="createUser()">
+            <div class="form-grid">
+                <div class="input-group">
+                    <input formControlName="username" placeholder="Username" />
+                </div>
+                <div class="input-group">
+                    <input formControlName="password" type="password" placeholder="Password (min 6 chars)" />
+                </div>
+            </div>
+            <div class="form-actions">
+                <button type="button" class="btn-secondary" (click)="toggleCreateForm()">Cancel</button>
+                <button type="submit" class="btn-primary" [disabled]="createUserForm.invalid">Create User</button>
+            </div>
+        </form>
+        <p *ngIf="message" class="message-banner" [class.success]="!message.startsWith('Error')">{{ message }}</p>
+    </div>
+
+    <!-- Hierarchy Tree -->
+    <div class="hierarchy-section">
+        <h4 class="section-title">Your Downline Network</h4>
+
+        <div class="tree-container" *ngIf="downline.length > 0; else noChildren">
+            <ng-container *ngTemplateOutlet="recursiveList; context:{ $implicit: downline, depth: 0 }"></ng-container>
+        </div>
+
+        <ng-template #noChildren>
+            <div class="empty-downline">
+                <div class="icon">👥</div>
+                <p>You haven't added any users yet.</p>
+                <button class="btn-link" (click)="toggleCreateForm()">Start building your team</button>
+            </div>
+        </ng-template>
+
+        <ng-template #recursiveList let-users let-depth="depth">
+            <ul class="tree-list">
+                <li *ngFor="let user of users" class="tree-item">
+                    <div class="user-card-row">
+                        <div class="user-info">
+                            <div class="avatar-small">{{ user.username.charAt(0).toUpperCase() }}</div>
+                            <div class="details">
+                                <span class="username">{{ user.username }}</span>
+                                <span class="balance">Balance: {{ user.balance | currency }} · Level {{ user.level
+                                    }}</span>
+                            </div>
+                        </div>
+                        <div class="actions">
+                            <span class="badge" [class.has-children]="user.children?.length">{{ user.children?.length ||
+                                0 }} Directs</span>
+                            <button class="btn-icon" title="Transfer" (click)="transferClick.emit(user)">
+                                💸
+                            </button>
+                            <button class="btn-icon btn-pwd" title="Change Password"
+                                (click)="showPasswordForm = showPasswordForm === user ? null : user">
+                                🔑
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Change Password Form (inline) -->
+                    <div class="password-form" *ngIf="showPasswordForm === user">
+                        <input type="password" [(ngModel)]="newPassword" placeholder="New password (min 6 chars)"
+                            class="pwd-input" />
+                        <button class="btn-sm" (click)="changePassword(user)">Update</button>
+                        <p *ngIf="passwordMessage" class="pwd-msg">{{ passwordMessage }}</p>
+                    </div>
+
+                    <div class="children-container" *ngIf="user.children && user.children.length > 0">
+                        <ng-container
+                            *ngTemplateOutlet="recursiveList; context:{ $implicit: user.children, depth: depth + 1 }"></ng-container>
+                    </div>
+                </li>
+            </ul>
+        </ng-template>
+    </div>
+</div>
